@@ -12,6 +12,8 @@ COPY services.d/simp_le/* /etc/services.d/simp_le/
 COPY nginx.conf /etc/nginx/
 COPY proxy.conf /etc/nginx/conf.d/default.conf
 COPY dhparams.pem /etc/nginx/
+COPY temp-setup-cert.pem /etc/nginx/temp-server-cert.pem
+COPY temp-setup-key.pem /etc/nginx/temp-server-key.pem
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
     && DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y \
@@ -50,10 +52,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
     && chmod +x /etc/services.d/*/* \
     && echo "---> Cleaning up" \
     && rm -Rf /var/lib/apt /var/cache/apt
-
-COPY temp-setup-cert.pem /certs/server-cert.pem
-COPY temp-setup-cert.pem /certs/server-fullchain.pem
-COPY temp-setup-key.pem /certs/server-key.pem
 
 VOLUME "/certs"
 

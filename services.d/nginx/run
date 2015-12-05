@@ -1,3 +1,12 @@
 #!/usr/bin/with-contenv bash
 /usr/local/bin/ep -v /etc/nginx/conf.d/*
+
+if [ ! -e /certs/server-cert.pem ]; then
+    cp /etc/nginx/temp-server-cert.pem /certs/server-cert.pem
+fi
+
+if [ ! -e /certs/server-key.pem ]; then
+    cp /etc/nginx/temp-server-key.pem /certs/server-key.pem
+fi
+
 exec nginx -g 'daemon off;'
