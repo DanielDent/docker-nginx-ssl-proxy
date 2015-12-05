@@ -1,4 +1,4 @@
-# SSL Front-End Proxy with Automatic Certificate Management
+# SSL Front-End Proxy With Automatic Free Certificate Management
 
 Zero configuration required - set up SSL in 30 seconds. Out of the box A rating at SSL labs. HTTP/2 enabled for increased performance.
 
@@ -63,7 +63,7 @@ Reasonable defaults have been chosen with an eye towards a configuration which i
    * [envplate](https://github.com/kreuzwerker/envplate) - for allowing use of environment variables in Nginx configuration
    * [s6-overlay](https://github.com/just-containers/s6-overlay) - for PID 1, process supervision, zombie reaping
 
-## Known issues (Contributions welcome)
+## Known Issues (Contributions Welcome!)
 
    * This image is a beast. As no external process produces build artifacts for inclusion into this image, it's larger than I'd like.
    * The simp_le install process is ugly and may lack sufficient checks of code checksums.
