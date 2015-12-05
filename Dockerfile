@@ -17,7 +17,7 @@ COPY temp-setup-key.pem /etc/nginx/temp-server-key.pem
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
     && DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends git wget \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends git wget curl \
     && echo "---> INSTALLING simp_le" \
     && cd /opt \
     && /usr/bin/git clone https://github.com/danieldent/simp_le \

@@ -6,7 +6,7 @@ if [ -z "$SERVERNAME" ]; then
 fi
 
 echo Waiting for Nginx to come up...
-until wget -T 1 --tries 0 http://127.0.0.1/; do
+until curl --connect-timeout 1 http://127.0.0.1/; do
     sleep 1s
 done
 echo Nginx has arrived.
