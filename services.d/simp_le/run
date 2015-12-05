@@ -1,0 +1,18 @@
+#!/usr/bin/with-contenv bash
+
+cd /certs
+
+while true; do
+
+    BIGSLEEP="$(( 360 + $(($RANDOM % 360)) ))"m # 6-12 hours
+
+    if /etc/cont-init.d/get-certificate.sh; then
+        nginx -s reload
+    else
+        sleep $BIGSLEEP
+    fi
+
+    SMALLSLEEP="$(( 150 + $(($RANDOM % 300)) ))"s # 2.5-7.5 minutes
+    sleep $SMALLSLEEP
+
+done
