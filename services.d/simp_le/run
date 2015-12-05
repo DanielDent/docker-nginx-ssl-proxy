@@ -1,14 +1,26 @@
 #!/usr/bin/with-contenv bash
 
+if [ -z "$SERVERNAME" ]; then
+    echo "ERROR: Server name must be specified..."
+    exit 1
+fi
+
+echo Waiting for Nginx to come up...
+until wget -T 1 --tries 0 http://127.0.0.1/; do
+    sleep 1s
+done
+echo Nginx has arrived.
+
 cd /certs
 
 while true; do
 
-    BIGSLEEP="$(( 360 + $(($RANDOM % 360)) ))"m # 6-12 hours
-
-    if /etc/cont-init.d/get-certificate.sh; then
+    if simp_le --cert_key_size 2048 -d $SERVERNAME:/usr/share/nginx/html -f key.pem -f cert.pem -f fullchain.pem; then
+        cp key.pem server-key.pem
+        cp fullchain.pem server-cert.pem # Nginx needs the intermediate certificate along with the server cert.
         nginx -s reload
     else
+        BIGSLEEP="$(( 360 + $(($RANDOM % 360)) ))"m # 6-12 hours
         sleep $BIGSLEEP
     fi
 

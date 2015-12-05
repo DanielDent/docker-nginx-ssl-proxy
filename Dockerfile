@@ -11,7 +11,6 @@ COPY services.d/nginx/* /etc/services.d/nginx/
 COPY services.d/simp_le/* /etc/services.d/simp_le/
 COPY nginx.conf /etc/nginx/
 COPY proxy.conf /etc/nginx/conf.d/default.conf
-COPY get-certificate.sh /etc/cont-init.d/
 COPY dhparams.pem /etc/nginx/
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
@@ -48,7 +47,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
     && rm ips-v6 ips-v4 \
     && echo "---> Fixing permissions" \
     && mkdir /certs \
-    && chmod +x /etc/services.d/*/* /etc/cont-init.d/get-certificate.sh \
+    && chmod +x /etc/services.d/*/* \
     && echo "---> Cleaning up" \
     && rm -Rf /var/lib/apt /var/cache/apt
 
