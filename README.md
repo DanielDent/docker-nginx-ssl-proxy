@@ -24,6 +24,7 @@ Create a docker-compose.yml file as follows:
 
     nginx-ssl-proxy:
       image: danieldent/nginx-ssl-proxy
+      restart: always
       environment:
         UPSTREAM: 127.0.0.1:8080
         SERVERNAME: test.example.com
