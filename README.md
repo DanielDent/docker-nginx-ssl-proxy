@@ -10,17 +10,13 @@ It is configured by setting two environment variables:
 
 Certificates from Let's Encrypt are issued with a 90 day expiration. This image will automatically renew the certificate when it is 60 days old.
 
-## WARNING 1
+## WARNING
 
-This image's default configuration includes a String-Transport-Security header with expiry set to 1 week. Visitors' browsers will cache this header for a week and will refuse to connect except over SSL.
+This image's default configuration includes a String-Transport-Security header with expiry set to 18 weeks (~ 4 months). Visitors' browsers will cache this header for 6 months and will refuse to connect except over SSL.
 
 Eventually, you may wish to:  
    * Increase the header's expiration time.
    * Have your domain included in browser [HSTS Preload](https://hstspreload.appspot.com/) lists.
-
-## WARNING 2
-
-At some point the default String-Transport-Security header may be increased to stronger settings.
 
 ## Example Use (via docker-compose)
 
