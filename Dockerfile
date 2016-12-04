@@ -51,6 +51,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
     && mkdir /certs \
     && chmod +x /etc/services.d/*/* \
     && echo "---> Cleaning up" \
+    && DEBIAN_FRONTEND=noninteractive apt-get remove -y git wget \
     && rm -Rf /var/lib/apt /var/cache/apt
 
 VOLUME "/certs"
