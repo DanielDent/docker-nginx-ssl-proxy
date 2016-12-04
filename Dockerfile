@@ -22,7 +22,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
     && cd /opt \
     && /usr/bin/git clone https://github.com/danieldent/simp_le \
     && cd simp_le \
-    && git reset --hard 976a33830759e66610970f92f6ec1a656a2c8335 \
+    && git reset --hard 3a103b76f933f9aef782a47401dd2eff5057a6f7 \
     && ./bootstrap.sh \
     && ./venv.sh \
     && ln -s $(pwd)/venv/bin/simp_le /usr/local/sbin/simp_le \

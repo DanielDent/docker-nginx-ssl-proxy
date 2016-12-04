@@ -1,5 +1,9 @@
 #!/usr/bin/with-contenv bash
 
+if [ -z "$TOS_HASH" ]; then
+    TOS_HASH=6373439b9f29d67a5cd4d18cbc7f264809342dbf21cb2ba2fc7588df987a6221
+fi
+
 if [ -z "$SERVERNAME" ]; then
     echo "ERROR: Server name must be specified..."
     exit 1
@@ -15,7 +19,7 @@ cd /certs
 
 while true; do
 
-    if simp_le --cert_key_size 2048 -d $SERVERNAME:/usr/share/nginx/html -f key.pem -f cert.pem -f fullchain.pem; then
+    if simp_le --cert_key_size 2048 -d $SERVERNAME:/usr/share/nginx/html -f account_key.json -f key.pem -f cert.pem -f fullchain.pem --tos_sha256 $TOS_HASH; then
         cp key.pem server-key.pem
         cp fullchain.pem server-cert.pem # Nginx needs the intermediate certificate along with the server cert.
         nginx -s reload
