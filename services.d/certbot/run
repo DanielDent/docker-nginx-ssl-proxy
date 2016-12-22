@@ -1,0 +1,31 @@
+#!/usr/bin/with-contenv bash
+
+if [ -z "$SERVERNAME" ]; then
+    echo "ERROR: Server name must be specified..."
+    exit 1
+fi
+
+echo Waiting for Nginx to come up...
+until curl --connect-timeout 1 http://127.0.0.1/; do
+    sleep 1s
+done
+echo Nginx has arrived.
+
+while true; do
+
+    if certbot certonly --non-interactive --webroot -w /usr/share/nginx/html --agree-tos \
+            --rsa-key-size 2048 --keep-until-expiring --expand --register-unsafely-without-email -d $SERVERNAME; then
+        cp /etc/letsencrypt/live/${SERVERNAME:-example.com}/privkey.pem /etc/letsencrypt/privkey-copy.pem
+        cp /etc/letsencrypt/live/${SERVERNAME:-example.com}/fullchain.pem /etc/letsencrypt/fullchain-copy.pem
+        nginx -s reload
+    else
+        if [ -e /etc/letsencrypt/live/${SERVERNAME:-example.com}/fullchain.pem ]; then
+            BIGSLEEP="$(( 360 + $(($RANDOM % 360)) ))"m # 6-12 hours
+            sleep $BIGSLEEP
+        fi
+    fi
+
+    SMALLSLEEP="$(( 150 + $(($RANDOM % 300)) ))"s # 2.5-7.5 minutes
+    sleep $SMALLSLEEP
+
+done

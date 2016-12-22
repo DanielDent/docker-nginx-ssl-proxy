@@ -10,4 +10,4 @@ nginx-ssl-proxy:
     - "80:80"
     - "443:443"
   volumes:
-    - "/certs"
+    - "/etc/letsencrypt"

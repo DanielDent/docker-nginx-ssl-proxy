@@ -10,6 +10,8 @@ It is configured by setting two environment variables:
 
 Certificates from Let's Encrypt are issued with a 90 day expiration. This image will automatically renew the certificate when it is 60 days old.
 
+Prior versions of this image used simp_le. It has been changed to use certbot due to reliability issues with simp_le.
+
 ## WARNING
 
 This image's default configuration includes a String-Transport-Security header with expiry set to 18 weeks (~ 4 months). Visitors' browsers will cache this header for 6 months and will refuse to connect except over SSL.
@@ -32,13 +34,13 @@ Create a docker-compose.yml file as follows:
         - "80:80"
         - "443:443"
       volumes:
-        - "/certs"
+        - "/etc/letsencrypt"
 
 Then simply `docker-compose up`.
 
 ## Certificate Data
 
-A `/certs` volume is used to maintain certificate data. An `account_key.json` file holds the key to your Let's Encrypt account - which provides a convenient way to revoke a certificate.
+A `/etc/letsencrypt` volume is used to maintain certificate data. An `account_key.json` file holds the key to your Let's Encrypt account - which provides a convenient way to revoke a certificate.
  
 ## Customizing
 
@@ -60,14 +62,13 @@ Reasonable defaults have been chosen with an eye towards a configuration which i
 ## Dependencies
 
    * [nginx](https://hub.docker.com/_/nginx/) - proxy server
-   * [simp_le](https://github.com/kuba/simp_le) - for handling certificate creation & validation (+ some wrappers in this image)
+   * [certbot](https://certbot.eff.org/) - for handling certificate creation & validation (+ some wrappers in this image)
    * [envplate](https://github.com/kreuzwerker/envplate) - for allowing use of environment variables in Nginx configuration
    * [s6-overlay](https://github.com/just-containers/s6-overlay) - for PID 1, process supervision, zombie reaping
 
 ## Known Issues (Contributions Welcome!)
 
    * This image is a beast. As no external process produces build artifacts for inclusion into this image, it's larger than I'd like.
-   * The simp_le install process is ugly and may lack sufficient checks of code checksums.
    * Currently only easily supports proxying a single hostname to a single backend server. 
    * Requesting a certificate with both SERVERNAME and www.SERVERNAME as SANs may ease common deployment problems.
    

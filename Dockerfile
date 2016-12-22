@@ -6,27 +6,11 @@ ENV ENVPLATE_SHA256 8366c3c480379dc325dea725aac86212c5f5d1bf55f5a9ef8e92375f42d5
 ENV CLOUDFLARE_V4_SHA256 3a69b705b18bd630e748165183a8158220b755fa9026b7db967cd9769410e606
 ENV CLOUDFLARE_V6_SHA256 e7d84e6f9f8668279312a4ed836ce69cab1750d6745062c7e73d9534711d7dc7
 
-RUN mkdir -p /etc/services.d/nginx /etc/services.d/simp_le
-COPY services.d/nginx/* /etc/services.d/nginx/
-COPY services.d/simp_le/* /etc/services.d/simp_le/
-COPY nginx.conf /etc/nginx/
-COPY proxy.conf /etc/nginx/conf.d/default.conf
-COPY dhparams.pem /etc/nginx/
-COPY temp-setup-cert.pem /etc/nginx/temp-server-cert.pem
-COPY temp-setup-key.pem /etc/nginx/temp-server-key.pem
-
-RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
+RUN echo 'deb http://httpredir.debian.org/debian/ jessie-backports main contrib non-free' >> /etc/apt/sources.list \
+    && DEBIAN_FRONTEND=noninteractive apt-get update -q \
     && DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends git wget curl \
-    && echo "---> INSTALLING simp_le" \
-    && cd /opt \
-    && /usr/bin/git clone https://github.com/danieldent/simp_le \
-    && cd simp_le \
-    && git reset --hard 3a103b76f933f9aef782a47401dd2eff5057a6f7 \
-    && ./bootstrap.sh \
-    && ./venv.sh \
-    && ln -s $(pwd)/venv/bin/simp_le /usr/local/sbin/simp_le \
-    && cd /tmp \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends wget curl \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y -t jessie-backports certbot \
     && echo "---> INSTALLING s6-overlay" \
     && wget https://github.com/just-containers/s6-overlay/releases/download/v1.17.0.0/s6-overlay-amd64.tar.gz \
     && echo $S6_OVERLAY_SHA256 s6-overlay-amd64.tar.gz | sha256sum -c \
@@ -47,14 +31,21 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
     && cat ips-v6 | sed -e 's/^/set_real_ip_from /' >> /etc/nginx/cloudflare.conf \
     && echo "real_ip_header CF-Connecting-IP;" >> /etc/nginx/cloudflare.conf \
     && rm ips-v6 ips-v4 \
-    && echo "---> Fixing permissions" \
-    && mkdir /certs \
-    && chmod +x /etc/services.d/*/* \
+    && echo "---> Creating directories" \
+    && mkdir -p /etc/services.d/nginx /etc/services.d/certbot \
     && echo "---> Cleaning up" \
-    && DEBIAN_FRONTEND=noninteractive apt-get remove -y git wget \
+    && DEBIAN_FRONTEND=noninteractive apt-get remove -y wget \
     && rm -Rf /var/lib/apt /var/cache/apt
 
-VOLUME "/certs"
+COPY services.d/nginx/* /etc/services.d/nginx/
+COPY services.d/certbot/* /etc/services.d/certbot/
+COPY nginx.conf /etc/nginx/
+COPY proxy.conf /etc/nginx/conf.d/default.conf
+COPY dhparams.pem /etc/nginx/
+COPY temp-setup-cert.pem /etc/nginx/temp-server-cert.pem
+COPY temp-setup-key.pem /etc/nginx/temp-server-key.pem
+
+VOLUME "/etc/letsencrypt"
 
 ENTRYPOINT ["/init"]
 CMD []
