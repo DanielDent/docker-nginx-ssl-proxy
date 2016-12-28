@@ -8,6 +8,8 @@ It is configured by setting two environment variables:
    * `UPSTREAM` - The IP address or hostname (and optional port) of the upstream server to proxy requests towards.
    * `SERVERNAME` - The hostname to listen to. The system will automatically obtain an SSL certificate for this hostname.
 
+An optional `EXTRANAMES` variable can be provided with a list of additional domains to request as subject-alternative-names for the certificate.
+
 Certificates from Let's Encrypt are issued with a 90 day expiration. This image will automatically renew the certificate when it is 60 days old.
 
 Prior versions of this image used simp_le. It has been changed to use certbot due to reliability issues with simp_le.
@@ -30,6 +32,7 @@ Create a docker-compose.yml file as follows:
       environment:
         UPSTREAM: 127.0.0.1:8080
         SERVERNAME: test.example.com
+        EXTRANAMES: www.test.example.com,test2.example.com
       ports:
         - "80:80"
         - "443:443"
@@ -66,12 +69,6 @@ Reasonable defaults have been chosen with an eye towards a configuration which i
    * [envplate](https://github.com/kreuzwerker/envplate) - for allowing use of environment variables in Nginx configuration
    * [s6-overlay](https://github.com/just-containers/s6-overlay) - for PID 1, process supervision, zombie reaping
 
-## Known Issues (Contributions Welcome!)
-
-   * This image is a beast. As no external process produces build artifacts for inclusion into this image, it's larger than I'd like.
-   * Currently only easily supports proxying a single hostname to a single backend server. 
-   * Requesting a certificate with both SERVERNAME and www.SERVERNAME as SANs may ease common deployment problems.
-   
 # Issues, Contributing
 
 If you run into any problems with this image, please check for issues on [GitHub](https://github.com/DanielDent/docker-nginx-ssl-proxy/issues).
