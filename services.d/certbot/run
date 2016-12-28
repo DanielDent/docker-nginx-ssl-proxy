@@ -5,6 +5,10 @@ if [ -z "$SERVERNAME" ]; then
     exit 1
 fi
 
+if ! [ -z "$EXTRANAMES" ]; then
+    EXTRANAMES="-d $EXTRANAMES"
+fi
+
 echo Waiting for Nginx to come up...
 until curl --connect-timeout 1 http://127.0.0.1/; do
     sleep 1s
@@ -14,7 +18,7 @@ echo Nginx has arrived.
 while true; do
 
     if certbot certonly --non-interactive --webroot -w /usr/share/nginx/html --agree-tos \
-            --rsa-key-size 2048 --keep-until-expiring --expand --register-unsafely-without-email -d $SERVERNAME; then
+            --rsa-key-size 2048 --keep-until-expiring --expand --register-unsafely-without-email -d $SERVERNAME $EXTRANAMES; then
         cp /etc/letsencrypt/live/${SERVERNAME:-example.com}/privkey.pem /etc/letsencrypt/privkey-copy.pem
         cp /etc/letsencrypt/live/${SERVERNAME:-example.com}/fullchain.pem /etc/letsencrypt/fullchain-copy.pem
         nginx -s reload
