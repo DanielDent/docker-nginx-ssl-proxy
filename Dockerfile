@@ -3,14 +3,12 @@ MAINTAINER Daniel Dent (https://www.danieldent.com/)
 
 ENV S6_OVERLAY_SHA256 65f6e4dae229f667e38177d5cad0159af31754b9b8f369096b5b7a9b4580d098
 ENV ENVPLATE_SHA256 8366c3c480379dc325dea725aac86212c5f5d1bf55f5a9ef8e92375f42d55a41
-ENV CLOUDFLARE_V4_SHA256 3a69b705b18bd630e748165183a8158220b755fa9026b7db967cd9769410e606
+ENV CLOUDFLARE_V4_SHA256 0248f5d00559a9caed08c3fad66f25f8570375c256ca3aa918dcba3378a8953c
 ENV CLOUDFLARE_V6_SHA256 e7d84e6f9f8668279312a4ed836ce69cab1750d6745062c7e73d9534711d7dc7
 
-RUN echo 'deb http://httpredir.debian.org/debian/ jessie-backports main contrib non-free' >> /etc/apt/sources.list \
-    && DEBIAN_FRONTEND=noninteractive apt-get update -q \
+RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
     && DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends wget curl \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y -t jessie-backports certbot \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends wget curl certbot \
     && echo "---> INSTALLING s6-overlay" \
     && wget https://github.com/just-containers/s6-overlay/releases/download/v1.17.0.0/s6-overlay-amd64.tar.gz \
     && echo $S6_OVERLAY_SHA256 s6-overlay-amd64.tar.gz | sha256sum -c \
