@@ -39,7 +39,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
 
 COPY services.d/nginx/* /etc/services.d/nginx/
 COPY services.d/certbot/* /etc/services.d/certbot/
-COPY nginx.conf security_headers.conf /etc/nginx/
+COPY nginx.conf security_headers.conf hsts.conf /etc/nginx/
 COPY proxy.conf /etc/nginx/conf.d/default.conf
 COPY auth_part*.conf /root/
 COPY dhparams.pem /etc/nginx/

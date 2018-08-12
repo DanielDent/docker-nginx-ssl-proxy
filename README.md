@@ -14,9 +14,11 @@ Certificates from Let's Encrypt are issued with a 90 day expiration. This image 
 
 Prior versions of this image used simp_le. It has been changed to use certbot due to reliability issues with simp_le.
 
-## WARNING
+## WARNING - HSTS Strict-Transport-Security Header
 
 This image's default configuration includes a `Strict-Transport-Security` header with expiry set to 1 year. Visitors' browsers will cache this header and will refuse to connect except over SSL. Eventually, you may wish to have your domain included in browser [HSTS Preload](https://hstspreload.appspot.com/) lists.
+
+This header can be customized with the `HSTS_HEADER` variable. If set to `skip`, no HSTS header will be used. If set to any other value, the value of the `HSTS_HEADER` variable will be used as the header's value. e.g. to prepare for HSTS preload, you could set `HSTS_HEADER` to `max-age=31536000; includeSubDomains; preload`.
 
 ## Example Use (via docker-compose)
 

@@ -29,6 +29,12 @@ if [ "$SECURITY_HEADERS" == "skip" ]; then
     echo "" > /etc/nginx/security_headers.conf
 fi
 
+if [ "$HSTS_HEADER" == "skip" ]; then
+    echo "" > /etc/nginx/hsts.conf
+elif [ "x$HSTS_HEADER" != "x" ]; then
+    echo add_header Strict-Transport-Security \"${HSTS_HEADER}\" always\; > /etc/nginx/hsts.conf
+fi
+
 if [ ! -e /etc/letsencrypt/fullchain-copy.pem ]; then
     cp /etc/nginx/temp-server-cert.pem /etc/letsencrypt/fullchain-copy.pem
 fi
