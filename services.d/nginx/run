@@ -1,6 +1,34 @@
 #!/usr/bin/with-contenv bash
 /usr/local/bin/ep -v /etc/nginx/conf.d/*
 
+if [ "$DO_AUTH" == "required" ]; then
+    cp /root/auth* /etc/nginx
+
+    # Set random cookie/password values if not provided
+    if [ "x$COOKIE_VALUE" == "x" ]; then
+        COOKIE_VALUE=$(pwgen -s -B 25)
+        echo Cookie Value: $COOKIE_VALUE
+    fi
+    if [ "x$PROXY_PASSWORD" == "x" ]; then
+        PROXY_PASSWORD=$(pwgen -s -B 25)
+        echo Proxy Password: $PROXY_PASSWORD
+        echo Proxy Password: $PROXY_PASSWORD > /tmp/proxy_password
+    fi
+    echo -n "admin:" > /tmp/htpasswd
+    echo $PROXY_PASSWORD | openssl passwd -apr1 -stdin >> /tmp/htpasswd
+
+    IPR_EXPANDED=""
+    for ip in $WHITELIST_IPS; do
+        IPR_EXPANDED="$IPR_EXPANDED $ip \"yes\"; "
+    done
+
+    COOKIE_VALUE="$COOKIE_VALUE" IPR_EXPANDED="$IPR_EXPANDED" /usr/local/bin/ep -v /etc/nginx/auth_part*.conf
+fi
+
+if [ "$SECURITY_HEADERS" == "skip" ]; then
+    echo "" > /etc/nginx/security_headers.conf
+fi
+
 if [ ! -e /etc/letsencrypt/fullchain-copy.pem ]; then
     cp /etc/nginx/temp-server-cert.pem /etc/letsencrypt/fullchain-copy.pem
 fi

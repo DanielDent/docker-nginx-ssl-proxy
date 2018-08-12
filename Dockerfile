@@ -8,7 +8,7 @@ ENV CLOUDFLARE_V6_SHA256 e7d84e6f9f8668279312a4ed836ce69cab1750d6745062c7e73d953
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
     && DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends wget curl certbot \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends wget curl certbot pwgen \
     && echo "---> INSTALLING s6-overlay" \
     && wget https://github.com/just-containers/s6-overlay/releases/download/v1.17.0.0/s6-overlay-amd64.tar.gz \
     && echo $S6_OVERLAY_SHA256 s6-overlay-amd64.tar.gz | sha256sum -c \
@@ -27,18 +27,21 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
     && wget https://www.cloudflare.com/ips-v6 \
     && echo $CLOUDFLARE_V6_SHA256 ips-v6 | sha256sum -c \
     && cat ips-v6 | sed -e 's/^/set_real_ip_from /' >> /etc/nginx/cloudflare.conf \
-    && echo "real_ip_header CF-Connecting-IP;" >> /etc/nginx/cloudflare.conf \
+    && echo "real_ip_header X-Forwarded-For;" >> /etc/nginx/cloudflare.conf \
+    && echo "real_ip_recursive on;" >> /etc/nginx/cloudflare.conf \
     && rm ips-v6 ips-v4 \
     && echo "---> Creating directories" \
     && mkdir -p /etc/services.d/nginx /etc/services.d/certbot \
     && echo "---> Cleaning up" \
     && DEBIAN_FRONTEND=noninteractive apt-get remove -y wget \
-    && rm -Rf /var/lib/apt /var/cache/apt
+    && rm -Rf /var/lib/apt /var/cache/apt \
+    && touch /etc/nginx/auth_part1.conf /etc/nginx/auth_part2.conf /tmp/htpasswd
 
 COPY services.d/nginx/* /etc/services.d/nginx/
 COPY services.d/certbot/* /etc/services.d/certbot/
-COPY nginx.conf /etc/nginx/
+COPY nginx.conf security_headers.conf /etc/nginx/
 COPY proxy.conf /etc/nginx/conf.d/default.conf
+COPY auth_part*.conf /root/
 COPY dhparams.pem /etc/nginx/
 COPY temp-setup-cert.pem /etc/nginx/temp-server-cert.pem
 COPY temp-setup-key.pem /etc/nginx/temp-server-key.pem

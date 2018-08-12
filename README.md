@@ -16,11 +16,7 @@ Prior versions of this image used simp_le. It has been changed to use certbot du
 
 ## WARNING
 
-This image's default configuration includes a String-Transport-Security header with expiry set to 18 weeks (~ 4 months). Visitors' browsers will cache this header for 6 months and will refuse to connect except over SSL.
-
-Eventually, you may wish to:  
-   * Increase the header's expiration time.
-   * Have your domain included in browser [HSTS Preload](https://hstspreload.appspot.com/) lists.
+This image's default configuration includes a `Strict-Transport-Security` header with expiry set to 1 year. Visitors' browsers will cache this header and will refuse to connect except over SSL. Eventually, you may wish to have your domain included in browser [HSTS Preload](https://hstspreload.appspot.com/) lists.
 
 ## Example Use (via docker-compose)
 
@@ -41,6 +37,24 @@ Create a docker-compose.yml file as follows:
 
 Then simply `docker-compose up`.
 
+## Optional: Enable Simple Authentication
+
+If the `DO_AUTH` environment variable is set to `required`, the proxy implements a simple authentication system.
+
+A user meeting any of these three criteria will be allowed access to the proxied service:
+
+   * Users coming from an IP or CIDR range listed in the space-separated `WHITELIST_IPS` variable.
+   * Users presenting a cookie named `magic_ssl_proxy_auth` set to the value of the `COOKIE_VALUE` variable.
+   * Users providing HTTP Basic Authentication credentials, username `admin` with a password matching the `PROXY_PASSWORD` variable.
+   
+A user that correctly authenticates with HTTP Basic Authentication will have their `magic_ssl_proxy_auth` cookie set so that they are not required to re-authenticate. 
+   
+By default, no IPs are whitelisted. When authentication is enabled, the `COOKIE_VALUE` and `PROXY_PASSWORD` values will be chosen randomly if they are not provided. If randomly chosen, the randomly chosen values will be output to the console during container startup. The `PROXY_PASSWORD` value will also be available in the `/tmp/proxy_password` file within the container, while the chosen `COOKIE_VALUE` will be available in the `/etc/nginx/auth_part1.conf` file. 
+
+When configuring IP based authentication, be mindful that reverse proxies and your Docker configuration may result in an apparent source IP that does not match the client's true IP address. Additional instances of the `set_real_ip_from` directive can be provided with the IP addresses of your trusted HTTP proxies. By default, Cloudflare IP addresses will be trusted to provide an `X-Forwarded-For` header.  Directly exposing this image to the internet (e.g. via the `ports` directive as in the above example) will remove one source of potential problems with IP based authentication.
+
+Nginx limits the length of your `COOKIE_VALUE` for performance reasons. If your `COOKIE_VALUE` is too long, nginx will refuse to start and will display errors relating to `server_names_hash_bucket_size` and `server_names_hash_max_size`. If you have difficulties, try decreasing the legnth of your cookie or add directives to your Nginx configuration to increase the maximum size.
+
 ## Certificate Data
 
 A `/etc/letsencrypt` volume is used to maintain certificate data. An `account_key.json` file holds the key to your Let's Encrypt account - which provides a convenient way to revoke a certificate.
@@ -60,7 +74,7 @@ Reasonable defaults have been chosen for SSL cipher suites using [Mozilla's Reco
 
 ## Security Headers
 
-Reasonable defaults have been chosen with an eye towards a configuration which is more secure by default. See https://www.owasp.org/index.php/List_of_useful_HTTP_headers for more information on the headers used.
+Reasonable defaults have been chosen with an eye towards a configuration which is more secure by default. See https://www.owasp.org/index.php/List_of_useful_HTTP_headers for more information on the headers used. These headers can be disabled by setting the `SECURITY_HEADERS` variable to `skip`. If your upstream server is itself sending these headers, setting the `SECURITY_HEADERS` variable will avoid the presence of multiple instances of these headers in responses.
 
 ## Dependencies
 
@@ -76,7 +90,7 @@ Please file a pull request or create a new issue for problems or potential impro
 
 # License
 
-Copyright 2015 [Daniel Dent](https://www.danieldent.com/).
+Copyright 2015-2018 [Daniel Dent](https://www.danieldent.com/).
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use these files except in compliance with the License.
