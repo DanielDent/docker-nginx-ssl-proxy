@@ -57,6 +57,16 @@ When configuring IP based authentication, be mindful that reverse proxies and yo
 
 Nginx limits the length of your `COOKIE_VALUE` for performance reasons. If your `COOKIE_VALUE` is too long, nginx will refuse to start and will display errors relating to `server_names_hash_bucket_size` and `server_names_hash_max_size`. If you have difficulties, try decreasing the legnth of your cookie or add directives to your Nginx configuration to increase the maximum size.
 
+## Optional: Adjust request size limits & buffer size
+
+The `NGINX_CLIENT_MAX_BODY_SIZE` and `NGINX_CLIENT_BODY_BUFFER_SIZE` variables can be used to set nginx's `client_max_body_size` and `client_body_buffer_size` directives. This is most commonly required when users are uploading files to the proxied service.
+
+E.g. With `NGINX_CLIENT_MAX_BODY_SIZE` set to `100m`, nginx will allow a maximum body size of 100 megabytes. When requests are larger than `client_body_buffer_size`, nginx buffers the request using a temporary file. A larger `client_body_buffer_size` will use more memory, but will also reduce disk I/O. In many scenarios, a larger buffer size will result in increased performance. Different tradeoffs will be appropriate for different environments and use cases. 
+
+## Optional: Add Arbitrary Nginx Config
+
+The `/etc/nginx/main_location.conf` file provides a place to add arbitrary Nginx configuration directives to the main location block in the Nginx configuration file. The file is empty and can be safely overwritten in a downstream image or using a Docker volume.
+
 ## Certificate Data
 
 A `/etc/letsencrypt` volume is used to maintain certificate data. An `account_key.json` file holds the key to your Let's Encrypt account - which provides a convenient way to revoke a certificate.

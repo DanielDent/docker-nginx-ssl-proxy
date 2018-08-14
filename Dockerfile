@@ -35,7 +35,11 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
     && echo "---> Cleaning up" \
     && DEBIAN_FRONTEND=noninteractive apt-get remove -y wget \
     && rm -Rf /var/lib/apt /var/cache/apt \
-    && touch /etc/nginx/auth_part1.conf /etc/nginx/auth_part2.conf /tmp/htpasswd
+    && touch /etc/nginx/auth_part1.conf \
+             /etc/nginx/auth_part2.conf \
+             /etc/nginx/request_size.conf \
+             /etc/nginx/main_location.conf \
+             /tmp/htpasswd
 
 COPY services.d/nginx/* /etc/services.d/nginx/
 COPY services.d/certbot/* /etc/services.d/certbot/

@@ -35,6 +35,14 @@ elif [ "x$HSTS_HEADER" != "x" ]; then
     echo add_header Strict-Transport-Security \"${HSTS_HEADER}\" always\; > /etc/nginx/hsts.conf
 fi
 
+if [ "x$NGINX_CLIENT_MAX_BODY_SIZE" != "x" ]; then
+    echo client_max_body_size ${NGINX_CLIENT_MAX_BODY_SIZE}\; >> /etc/nginx/request_size.conf
+fi
+
+if [ "x$NGINX_CLIENT_BODY_BUFFER_SIZE" != "x" ]; then
+    echo client_body_buffer_size ${NGINX_CLIENT_BODY_BUFFER_SIZE}\; >> /etc/nginx/request_size.conf
+fi
+
 if [ ! -e /etc/letsencrypt/fullchain-copy.pem ]; then
     cp /etc/nginx/temp-server-cert.pem /etc/letsencrypt/fullchain-copy.pem
 fi
