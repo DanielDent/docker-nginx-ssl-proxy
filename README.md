@@ -53,9 +53,17 @@ A user that correctly authenticates with HTTP Basic Authentication will have the
    
 By default, no IPs are whitelisted. When authentication is enabled, the `COOKIE_VALUE` and `PROXY_PASSWORD` values will be chosen randomly if they are not provided. If randomly chosen, the randomly chosen values will be output to the console during container startup. The `PROXY_PASSWORD` value will also be available in the `/tmp/proxy_password` file within the container, while the chosen `COOKIE_VALUE` will be available in the `/etc/nginx/auth_part1.conf` file. 
 
-When configuring IP based authentication, be mindful that reverse proxies and your Docker configuration may result in an apparent source IP that does not match the client's true IP address. Additional instances of the `set_real_ip_from` directive can be provided with the IP addresses of your trusted HTTP proxies. By default, Cloudflare IP addresses will be trusted to provide an `X-Forwarded-For` header.  Directly exposing this image to the internet (e.g. via the `ports` directive as in the above example) will remove one source of potential problems with IP based authentication.
-
 Nginx limits the length of your `COOKIE_VALUE` for performance reasons. If your `COOKIE_VALUE` is too long, nginx will refuse to start and will display errors relating to `server_names_hash_bucket_size` and `server_names_hash_max_size`. If you have difficulties, try decreasing the legnth of your cookie or add directives to your Nginx configuration to increase the maximum size.
+
+## Optional: Use upstream `X-Forwarded-For` headers
+
+When configuring IP based authentication, be mindful that upstream reverse proxies and your Docker configuration may result in an apparent source IP that does not match the client's true IP address. Directly exposing this image to the internet (e.g. via the `ports` directive as in the above example) will remove one source of potential problems with IP based authentication.
+
+Set the `REAL_IP_RECURSIVE` environment variable to `on` to cause Nginx to parse & use upstream `X-Forwarded-For` headers.
+
+The list of IPs or CIDR ranges from which Nginx will trust the `X-Forwarded-For` variable can be specified in the `SET_REAL_IP_FROM` variable.
+
+As a convenience, setting `SET_REAL_IP_FROM_CLOUDFLARE` to `yes` will cause Cloudflare's reverse proxy source IP addresses to be appended to the provided `SET_REAL_IP_FROM` list.  
 
 ## Optional: Adjust request size limits & buffer size
 

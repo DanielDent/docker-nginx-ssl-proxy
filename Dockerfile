@@ -23,12 +23,10 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
     && echo '#Cloudflare' > /etc/nginx/cloudflare.conf \
     && wget https://www.cloudflare.com/ips-v4 \
     && echo $CLOUDFLARE_V4_SHA256 ips-v4 | sha256sum -c \
-    && cat ips-v4 | sed -e 's/^/set_real_ip_from /' >> /etc/nginx/cloudflare.conf \
+    && cat ips-v4 | sed -e 's/^/set_real_ip_from /' -e 's/$/;/' >> /etc/nginx/cloudflare.conf \
     && wget https://www.cloudflare.com/ips-v6 \
     && echo $CLOUDFLARE_V6_SHA256 ips-v6 | sha256sum -c \
-    && cat ips-v6 | sed -e 's/^/set_real_ip_from /' >> /etc/nginx/cloudflare.conf \
-    && echo "real_ip_header X-Forwarded-For;" >> /etc/nginx/cloudflare.conf \
-    && echo "real_ip_recursive on;" >> /etc/nginx/cloudflare.conf \
+    && cat ips-v6 | sed -e 's/^/set_real_ip_from /' -e 's/$/;/' >> /etc/nginx/cloudflare.conf \
     && rm ips-v6 ips-v4 \
     && echo "---> Creating directories" \
     && mkdir -p /etc/services.d/nginx /etc/services.d/certbot \
@@ -39,6 +37,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
              /etc/nginx/auth_part2.conf \
              /etc/nginx/request_size.conf \
              /etc/nginx/main_location.conf \
+             /etc/nginx/trusted_proxies.conf \
              /tmp/htpasswd
 
 COPY services.d/nginx/* /etc/services.d/nginx/

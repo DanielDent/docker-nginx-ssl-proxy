@@ -29,6 +29,23 @@ if [ "$SECURITY_HEADERS" == "skip" ]; then
     echo "" > /etc/nginx/security_headers.conf
 fi
 
+if [ "$REAL_IP_RECURSIVE" == "on" ]; then
+    echo "real_ip_header X-Forwarded-For;" >> /etc/nginx/trusted_proxies.conf \
+    && echo "real_ip_recursive on;" >> /etc/nginx/trusted_proxies.conf
+fi
+
+if [ "$SET_REAL_IP_FROM_CLOUDFLARE" == "yes" ]; then
+    cat /etc/nginx/cloudflare.conf >> /etc/nginx/trusted_proxies.conf
+fi
+
+if [ "$SET_REAL_IP_FROM" != "x" ]; then
+    SET_REAL_IP_FROM_EXPANDED=""
+    for ip in $SET_REAL_IP_FROM; do
+        SET_REAL_IP_FROM_EXPANDED="$SET_REAL_IP_FROM_EXPANDED set_real_ip_from ${ip};"
+    done
+    echo $SET_REAL_IP_FROM_EXPANDED >> /etc/nginx/trusted_proxies.conf
+fi
+
 if [ "$HSTS_HEADER" == "skip" ]; then
     echo "" > /etc/nginx/hsts.conf
 elif [ "x$HSTS_HEADER" != "x" ]; then
