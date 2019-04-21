@@ -4,7 +4,7 @@ MAINTAINER Daniel Dent (https://www.danieldent.com/)
 ENV S6_OVERLAY_SHA256 65f6e4dae229f667e38177d5cad0159af31754b9b8f369096b5b7a9b4580d098
 ENV ENVPLATE_SHA256 8366c3c480379dc325dea725aac86212c5f5d1bf55f5a9ef8e92375f42d55a41
 ENV CLOUDFLARE_V4_SHA256 0248f5d00559a9caed08c3fad66f25f8570375c256ca3aa918dcba3378a8953c
-ENV CLOUDFLARE_V6_SHA256 7f094cca6343776821460d6e2bb7c757f34868f182a24ad21eddf95f53dce373
+ENV CLOUDFLARE_V6_SHA256 559b5c5a20088758b4643621ae80be0a71567742ae1fe8e4ff32d1ca26297f8f
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
     && DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y \
@@ -22,12 +22,14 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
     && echo "---> CREATING CloudFlare Config Snippet (not included in config by default)" \
     && echo '#Cloudflare' > /etc/nginx/cloudflare.conf \
     && wget https://www.cloudflare.com/ips-v4 \
-    && echo $CLOUDFLARE_V4_SHA256 ips-v4 | sha256sum -c \
+    && sort ips-v4 > ips-v4.sorted \
+    && echo $CLOUDFLARE_V4_SHA256 ips-v4.sorted | sha256sum -c \
     && cat ips-v4 | sed -e 's/^/set_real_ip_from /' -e 's/$/;/' >> /etc/nginx/cloudflare.conf \
     && wget https://www.cloudflare.com/ips-v6 \
-    && echo $CLOUDFLARE_V6_SHA256 ips-v6 | sha256sum -c \
+    && sort ips-v6 > ips-v6.sorted \
+    && echo $CLOUDFLARE_V6_SHA256 ips-v6.sorted | sha256sum -c \
     && cat ips-v6 | sed -e 's/^/set_real_ip_from /' -e 's/$/;/' >> /etc/nginx/cloudflare.conf \
-    && rm ips-v6 ips-v4 \
+    && rm ips-v6 ips-v4 ips-v6.sorted ips-v4.sorted \
     && echo "---> Creating directories" \
     && mkdir -p /etc/services.d/nginx /etc/services.d/certbot \
     && echo "---> Cleaning up" \
