@@ -29,6 +29,8 @@ if [ "$SECURITY_HEADERS" == "skip" ]; then
     echo "" > /etc/nginx/security_headers.conf
 fi
 
+echo '' > /etc/nginx/trusted_proxies.conf
+
 if [ "$REAL_IP_RECURSIVE" == "on" ]; then
     echo "real_ip_header X-Forwarded-For;" >> /etc/nginx/trusted_proxies.conf \
     && echo "real_ip_recursive on;" >> /etc/nginx/trusted_proxies.conf
@@ -51,6 +53,8 @@ if [ "$HSTS_HEADER" == "skip" ]; then
 elif [ "x$HSTS_HEADER" != "x" ]; then
     echo add_header Strict-Transport-Security \"${HSTS_HEADER}\" always\; > /etc/nginx/hsts.conf
 fi
+
+echo '' > /etc/nginx/request_size.conf
 
 if [ "x$NGINX_CLIENT_MAX_BODY_SIZE" != "x" ]; then
     echo client_max_body_size ${NGINX_CLIENT_MAX_BODY_SIZE}\; >> /etc/nginx/request_size.conf
