@@ -15,6 +15,15 @@ until curl --connect-timeout 1 http://127.0.0.1/; do
 done
 echo Nginx has arrived.
 
+echo Waiting for a response from http://${SERVERNAME:-example.com}/
+# --dns-servers 8.8.8.8 (ideal curl flag) is not available in default build
+until curl --connect-timeout 1 http://${SERVERNAME:-example.com}/; do
+    echo Request to http://${SERVERNAME:-example.com}/ failed.  Until Nginx is visible at this DNS, certificate verification will not pass.
+    echo Let\'s Encrypt uses Google\'s DNS servers.  If you have already updated your DNS host, you can flush the Google DNS cache by completing the form at https://developers.google.com/speed/public-dns/cache
+    sleep 15s
+done
+echo Something is responding at  http://${SERVERNAME:-example.com}/
+
 while true; do
 
     if certbot certonly --non-interactive --webroot -w /usr/share/nginx/html --agree-tos \
