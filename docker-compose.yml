@@ -1,13 +1,16 @@
 #!docker-compose.yml
 
-nginx-ssl-proxy:
-  image: danieldent/nginx-ssl-proxy
-  restart: always
-  environment:
-    UPSTREAM: 127.0.0.1:8080
-    SERVERNAME: test.example.com
-  ports:
-    - "80:80"
-    - "443:443"
-  volumes:
-    - "/etc/letsencrypt"
+services:  
+  nginx-ssl-proxy:
+    image: nginx-ssl-proxy-test:latest
+    restart: always
+    environment:
+      UPSTREAM_HOST: nvidia.demo.mymap.online
+      UPSTREAM_PORT: 443
+      UPSTREAM_PROTOCOL: https
+      SERVERNAME: ssl-test.mymap.online
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/etc/letsencrypt"
