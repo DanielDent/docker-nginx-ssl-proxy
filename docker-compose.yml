@@ -5,10 +5,10 @@ services:
     image: nginx-ssl-proxy-test:latest
     restart: always
     environment:
-      UPSTREAM_HOST: nvidia.demo.mymap.online
+      UPSTREAM_HOST: example.com
       UPSTREAM_PORT: 443
       UPSTREAM_PROTOCOL: https
-      SERVERNAME: ssl-test.mymap.online
+      SERVERNAME: ssl-proxy.example.com
     ports:
       - "80:80"
       - "443:443"
