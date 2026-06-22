@@ -15,9 +15,30 @@ export NGINX_RESOLVERS="${NGINX_RESOLVERS:-127.0.0.11}"
 export NGINX_RESOLVER_VALID="${NGINX_RESOLVER_VALID:-30s}"
 export NGINX_RESOLVER_TIMEOUT="${NGINX_RESOLVER_TIMEOUT:-5s}"
 export NGINX_UPSTREAM_ZONE_SIZE="${NGINX_UPSTREAM_ZONE_SIZE:-64k}"
+export NGINX_UPSTREAM_RESOLVE="${NGINX_UPSTREAM_RESOLVE:-auto}"
 export NGINX_OCSP_RESOLVERS="${NGINX_OCSP_RESOLVERS:-$NGINX_RESOLVERS}"
 export NGINX_OCSP_RESOLVER_VALID="${NGINX_OCSP_RESOLVER_VALID:-300s}"
 export NGINX_OCSP_RESOLVER_TIMEOUT="${NGINX_OCSP_RESOLVER_TIMEOUT:-5s}"
+
+if [ "$NGINX_UPSTREAM_RESOLVE" == "auto" ]; then
+    if echo " $NGINX_RESOLVERS " | grep -q ' 127\.0\.0\.11 '; then
+        NGINX_UPSTREAM_RESOLVE="on"
+    else
+        NGINX_UPSTREAM_RESOLVE="off"
+    fi
+fi
+
+echo '' > /etc/nginx/upstream_resolver.conf
+
+if [ "$NGINX_UPSTREAM_RESOLVE" == "on" ]; then
+    {
+        echo "resolver ${NGINX_RESOLVERS} valid=${NGINX_RESOLVER_VALID} ipv6=off;"
+        echo "resolver_timeout ${NGINX_RESOLVER_TIMEOUT};"
+    } > /etc/nginx/upstream_resolver.conf
+    export NGINX_UPSTREAM_RESOLVE_SUFFIX=" resolve"
+else
+    export NGINX_UPSTREAM_RESOLVE_SUFFIX=""
+fi
 
 echo '' > /etc/nginx/ocsp_stapling.conf
 
