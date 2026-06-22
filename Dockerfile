@@ -77,6 +77,7 @@ RUN set -eux; \
     touch /etc/nginx/auth_part1.conf \
              /etc/nginx/auth_part2.conf \
              /etc/nginx/request_size.conf \
+             /etc/nginx/extra_headers.conf \
              /etc/nginx/main_location.conf \
              /etc/nginx/trusted_proxies.conf \
              /tmp/htpasswd

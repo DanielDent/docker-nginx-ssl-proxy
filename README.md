@@ -109,7 +109,27 @@ Reasonable defaults have been chosen for SSL cipher suites using [Mozilla's Reco
 
 ## Security Headers
 
-Reasonable defaults have been chosen with an eye towards a configuration which is more secure by default. See https://www.owasp.org/index.php/List_of_useful_HTTP_headers for more information on the headers used. These headers can be disabled by setting the `SECURITY_HEADERS` variable to `skip`. If your upstream server is itself sending these headers, setting the `SECURITY_HEADERS` variable will avoid the presence of multiple instances of these headers in responses.
+By default the proxy adds a conservative set of response security headers:
+
+   * `X-Content-Type-Options: nosniff`
+   * `X-Frame-Options: SAMEORIGIN`
+   * `Referrer-Policy: strict-origin-when-cross-origin`
+
+These can be disabled by setting the `SECURITY_HEADERS` variable to `skip`. See the [OWASP Secure Headers Project](https://owasp.org/www-project-secure-headers/) for background on these headers.
+
+Note that nginx *adds* these headers rather than replacing any sent by the upstream. If your upstream server already emits the same headers, responses will contain duplicate values, which browsers handle inconsistently. In that case either stop the upstream from sending them or set `SECURITY_HEADERS` to `skip` here.
+
+## Optional: Content-Security-Policy & Permissions-Policy
+
+A `Content-Security-Policy` is one of the strongest defenses against cross-site scripting and injection, but an effective policy is specific to the application being proxied, so none is sent by default. Set the `CSP_HEADER` variable to have the proxy add a `Content-Security-Policy` header, e.g.:
+
+    CSP_HEADER: "default-src 'self'; img-src 'self' data:; object-src 'none'"
+
+Similarly, set `PERMISSIONS_POLICY_HEADER` to add a `Permissions-Policy` header controlling access to browser features, e.g.:
+
+    PERMISSIONS_POLICY_HEADER: "geolocation=(), camera=(), microphone=()"
+
+Both are unset by default and are independent of the `SECURITY_HEADERS` variable. As with the other security headers, these are added to (not merged with) any header of the same name sent by the upstream.
 
 ## Dependencies
 

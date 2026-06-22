@@ -71,6 +71,16 @@ elif [ "x$HSTS_HEADER" != "x" ]; then
     echo add_header Strict-Transport-Security \"${HSTS_HEADER}\" always\; > /etc/nginx/hsts.conf
 fi
 
+echo '' > /etc/nginx/extra_headers.conf
+
+if [ "x$CSP_HEADER" != "x" ]; then
+    echo add_header Content-Security-Policy \"${CSP_HEADER}\" always\; >> /etc/nginx/extra_headers.conf
+fi
+
+if [ "x$PERMISSIONS_POLICY_HEADER" != "x" ]; then
+    echo add_header Permissions-Policy \"${PERMISSIONS_POLICY_HEADER}\" always\; >> /etc/nginx/extra_headers.conf
+fi
+
 echo '' > /etc/nginx/request_size.conf
 
 if [ "x$NGINX_CLIENT_MAX_BODY_SIZE" != "x" ]; then
