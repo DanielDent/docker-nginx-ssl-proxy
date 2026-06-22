@@ -47,6 +47,28 @@ if [ -n "$CERTBOT_PREFERRED_PROFILE" ]; then
     CERTBOT_ARGS+=(--preferred-profile "$CERTBOT_PREFERRED_PROFILE")
 fi
 
+http_hostname_is_reachable() {
+    local hostname="$1"
+    local address
+    local url
+
+    while read -r address; do
+        if [[ "$address" == *:* ]]; then
+            url="http://[$address]/"
+        else
+            url="http://$address/"
+        fi
+
+        # Resolve with getent, then connect to the literal address so this
+        # preflight does not depend on curl's threaded DNS resolver.
+        if curl --connect-timeout 1 --max-time 5 -H "Host: $hostname" "$url"; then
+            return 0
+        fi
+    done < <(getent ahosts "$hostname" | awk '$2 == "STREAM" && !seen[$1]++ { print $1 }')
+
+    return 1
+}
+
 echo Waiting for Nginx to come up...
 until curl --connect-timeout 1 http://127.0.0.1/; do
     sleep 1s
@@ -55,7 +77,7 @@ echo Nginx has arrived.
 
 echo Waiting for a response from http://${SERVERNAME:-example.com}/
 # --dns-servers 8.8.8.8 (ideal curl flag) is not available in default build
-until curl --connect-timeout 1 http://${SERVERNAME:-example.com}/; do
+until http_hostname_is_reachable "${SERVERNAME:-example.com}"; do
     echo Request to http://${SERVERNAME:-example.com}/ failed.  Until Nginx is visible at this DNS, certificate verification cannot succeed.  To avoid hitting rate limits, this check will repeat every 15s until resolved.
     echo Let\'s Encrypt uses Google\'s DNS servers.  If you have already updated your DNS host, you can flush the Google DNS cache by completing the form at https://developers.google.com/speed/public-dns/cache
     sleep 15s
