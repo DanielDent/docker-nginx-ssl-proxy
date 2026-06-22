@@ -39,6 +39,21 @@ Create a docker-compose.yml file as follows:
 
 Then simply `docker-compose up`.
 
+## Optional: Upstream DNS Re-resolution
+
+The proxy uses nginx dynamic upstream DNS resolution. This is useful when `UPSTREAM` is a Docker or Compose service name whose container IP can change after a recreate.
+
+By default, the startup script reads the container's `/etc/resolv.conf` and uses those nameservers for upstream resolution. On Docker user-defined networks, including the default network created by Compose, this is typically Docker's embedded DNS server at `127.0.0.11`.
+
+The following environment variables can be used to tune this behavior:
+
+   * `NGINX_RESOLVERS` - Space-separated DNS resolvers for nginx to use when re-resolving `UPSTREAM`. If unset, nameservers are read from `/etc/resolv.conf`, falling back to `127.0.0.11`.
+   * `NGINX_RESOLVER_VALID` - How long nginx should consider DNS answers valid. Defaults to `30s`.
+   * `NGINX_RESOLVER_TIMEOUT` - DNS lookup timeout. Defaults to `5s`.
+   * `NGINX_UPSTREAM_ZONE_SIZE` - Shared memory zone size required by nginx for dynamic upstream resolution. Defaults to `64k`.
+
+Existing upstream connections are not forcibly moved when DNS changes. New upstream connections use the refreshed address after nginx re-resolves the name.
+
 ## Optional: Enable Simple Authentication
 
 If the `DO_AUTH` environment variable is set to `required`, the proxy implements a simple authentication system.

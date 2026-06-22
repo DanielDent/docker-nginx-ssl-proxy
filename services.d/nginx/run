@@ -1,4 +1,21 @@
 #!/usr/bin/with-contenv bash
+if [ "x$NGINX_RESOLVERS" == "x" ]; then
+    NGINX_RESOLVERS="$(
+        awk '$1 == "nameserver" {
+            if ($2 ~ /:/ && $2 !~ /^\[/) {
+                print "[" $2 "]"
+            } else {
+                print $2
+            }
+        }' /etc/resolv.conf | xargs
+    )"
+fi
+
+export NGINX_RESOLVERS="${NGINX_RESOLVERS:-127.0.0.11}"
+export NGINX_RESOLVER_VALID="${NGINX_RESOLVER_VALID:-30s}"
+export NGINX_RESOLVER_TIMEOUT="${NGINX_RESOLVER_TIMEOUT:-5s}"
+export NGINX_UPSTREAM_ZONE_SIZE="${NGINX_UPSTREAM_ZONE_SIZE:-64k}"
+
 /usr/local/bin/ep -v /etc/nginx/conf.d/*
 
 if [ "$DO_AUTH" == "required" ]; then
