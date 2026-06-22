@@ -5,8 +5,46 @@ if [ -z "$SERVERNAME" ]; then
     exit 1
 fi
 
-if ! [ -z "$EXTRANAMES" ]; then
-    EXTRANAMES="-d $EXTRANAMES"
+CERTBOT_KEY_TYPE="${CERTBOT_KEY_TYPE:-rsa}"
+CERTBOT_RSA_KEY_SIZE="${CERTBOT_RSA_KEY_SIZE:-2048}"
+CERTBOT_ELLIPTIC_CURVE="${CERTBOT_ELLIPTIC_CURVE:-secp256r1}"
+
+CERTBOT_ARGS=(
+    certonly
+    --non-interactive
+    --webroot
+    -w /usr/share/nginx/html
+    --agree-tos
+    --keep-until-expiring
+    --expand
+    --register-unsafely-without-email
+    --key-type "$CERTBOT_KEY_TYPE"
+    -d "$SERVERNAME"
+)
+
+if [ -n "$EXTRANAMES" ]; then
+    CERTBOT_ARGS+=(-d "$EXTRANAMES")
+fi
+
+case "$CERTBOT_KEY_TYPE" in
+    rsa)
+        CERTBOT_ARGS+=(--rsa-key-size "$CERTBOT_RSA_KEY_SIZE")
+        ;;
+    ecdsa)
+        CERTBOT_ARGS+=(--elliptic-curve "$CERTBOT_ELLIPTIC_CURVE")
+        ;;
+    *)
+        echo "ERROR: CERTBOT_KEY_TYPE must be 'rsa' or 'ecdsa'."
+        exit 1
+        ;;
+esac
+
+if [ -n "$CERTBOT_PREFERRED_CHAIN" ]; then
+    CERTBOT_ARGS+=(--preferred-chain "$CERTBOT_PREFERRED_CHAIN")
+fi
+
+if [ -n "$CERTBOT_PREFERRED_PROFILE" ]; then
+    CERTBOT_ARGS+=(--preferred-profile "$CERTBOT_PREFERRED_PROFILE")
 fi
 
 echo Waiting for Nginx to come up...
@@ -26,8 +64,7 @@ echo Something is responding at  http://${SERVERNAME:-example.com}/
 
 while true; do
 
-    if certbot certonly --non-interactive --webroot -w /usr/share/nginx/html --agree-tos \
-            --rsa-key-size 2048 --keep-until-expiring --expand --register-unsafely-without-email -d $SERVERNAME $EXTRANAMES; then
+    if certbot "${CERTBOT_ARGS[@]}"; then
         LIVE_DIR="/etc/letsencrypt/live/${SERVERNAME:-example.com}"
         # certbot exits 0 even when the certificate was not renewed ("not yet due").
         # Only deploy and reload nginx when the certificate has actually changed,

@@ -14,6 +14,26 @@ Certificates from Let's Encrypt are issued with a 90 day expiration. This image 
 
 Prior versions of this image used simp_le. It has been changed to use certbot due to reliability issues with simp_le.
 
+## Optional: Certificate Key, Chain, and Profile
+
+By default, this image requests RSA certificates for compatibility with prior versions of this image and with older TLS clients. To request an ECDSA certificate instead, set:
+
+    CERTBOT_KEY_TYPE: ecdsa
+
+The following environment variables control Certbot certificate issuance:
+
+   * `CERTBOT_KEY_TYPE` - Certificate key type to request. Supported values are `rsa` and `ecdsa`. Defaults to `rsa`.
+   * `CERTBOT_RSA_KEY_SIZE` - RSA key size used when `CERTBOT_KEY_TYPE` is `rsa`. Defaults to `2048`.
+   * `CERTBOT_ELLIPTIC_CURVE` - ECDSA curve used when `CERTBOT_KEY_TYPE` is `ecdsa`. Defaults to `secp256r1`.
+   * `CERTBOT_PREFERRED_CHAIN` - Optional Certbot preferred chain subject common name, passed to `--preferred-chain`.
+   * `CERTBOT_PREFERRED_PROFILE` - Optional ACME profile name, passed to `--preferred-profile`.
+
+Let's Encrypt issues ECDSA subscriber certificates from ECDSA intermediates and RSA subscriber certificates from RSA intermediates. Leaving `CERTBOT_PREFERRED_CHAIN` unset uses Let's Encrypt's default chain, which is usually the safest compatibility choice. Prefer setting `CERTBOT_PREFERRED_CHAIN` only when you have verified that your clients trust the requested chain.
+
+This image serves a single certificate/key pair. It does not request or serve simultaneous RSA and ECDSA certificates.
+
+Changing certificate options for an existing `/etc/letsencrypt` volume may not replace an unexpired certificate immediately because the renewal loop uses `--keep-until-expiring`. The new settings will apply when Certbot next renews or reissues the lineage. To force an immediate migration, run a one-time forced renewal inside the container with the same domains and desired Certbot options; do not configure forced renewal permanently in the service loop, because repeated forced issuance can hit Let's Encrypt rate limits.
+
 ## WARNING - HSTS Strict-Transport-Security Header
 
 This image's default configuration includes a `Strict-Transport-Security` header with expiry set to 1 year. Visitors' browsers will cache this header and will refuse to connect except over SSL. Eventually, you may wish to have your domain included in browser [HSTS Preload](https://hstspreload.appspot.com/) lists.
