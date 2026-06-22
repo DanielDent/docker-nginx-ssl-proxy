@@ -64,11 +64,11 @@ RUN set -eux; \
     curl -fsSLo ips-v4 https://www.cloudflare.com/ips-v4; \
     sort ips-v4 > ips-v4.sorted; \
     echo "${CLOUDFLARE_V4_SHA256}  ips-v4.sorted" | sha256sum -c -; \
-    sed -e 's/^/set_real_ip_from /' -e 's/$/;/' ips-v4 >> /etc/nginx/cloudflare.conf; \
+    sed -e 's/^/set_real_ip_from /' -e 's/$/;/' ips-v4.sorted >> /etc/nginx/cloudflare.conf; \
     curl -fsSLo ips-v6 https://www.cloudflare.com/ips-v6; \
     sort ips-v6 > ips-v6.sorted; \
     echo "${CLOUDFLARE_V6_SHA256}  ips-v6.sorted" | sha256sum -c -; \
-    sed -e 's/^/set_real_ip_from /' -e 's/$/;/' ips-v6 >> /etc/nginx/cloudflare.conf; \
+    sed -e 's/^/set_real_ip_from /' -e 's/$/;/' ips-v6.sorted >> /etc/nginx/cloudflare.conf; \
     rm ips-v6 ips-v4 ips-v6.sorted ips-v4.sorted; \
     echo "---> Creating directories"; \
     mkdir -p /etc/services.d/nginx /etc/services.d/certbot; \
