@@ -20,24 +20,33 @@ This image's default configuration includes a `Strict-Transport-Security` header
 
 This header can be customized with the `HSTS_HEADER` variable. If set to `skip`, no HSTS header will be used. If set to any other value, the value of the `HSTS_HEADER` variable will be used as the header's value. e.g. to prepare for HSTS preload, you could set `HSTS_HEADER` to `max-age=31536000; includeSubDomains; preload`.
 
-## Example Use (via docker-compose)
+## Example Use (via Docker Compose)
 
-Create a docker-compose.yml file as follows:
+Create a `compose.yaml` file as follows:
 
-    nginx-ssl-proxy:
-      image: danieldent/nginx-ssl-proxy
-      restart: always
-      environment:
-        UPSTREAM: 127.0.0.1:8080
-        SERVERNAME: test.example.com
-        EXTRANAMES: www.test.example.com,test2.example.com
-      ports:
-        - "80:80"
-        - "443:443"
-      volumes:
-        - "/etc/letsencrypt"
+    services:
+      app:
+        image: nginx:stable
+        expose:
+          - "80"
 
-Then simply `docker-compose up`.
+      nginx-ssl-proxy:
+        image: danieldent/nginx-ssl-proxy
+        restart: always
+        environment:
+          UPSTREAM: app:80
+          SERVERNAME: test.example.com
+          EXTRANAMES: www.test.example.com,test2.example.com
+        ports:
+          - "80:80"
+          - "443:443"
+        volumes:
+          - letsencrypt:/etc/letsencrypt
+
+    volumes:
+      letsencrypt:
+
+Then simply `docker compose up`.
 
 ## Optional: Upstream DNS Re-resolution
 
@@ -51,6 +60,9 @@ The following environment variables can be used to tune this behavior:
    * `NGINX_RESOLVER_VALID` - How long nginx should consider DNS answers valid. Defaults to `30s`.
    * `NGINX_RESOLVER_TIMEOUT` - DNS lookup timeout. Defaults to `5s`.
    * `NGINX_UPSTREAM_ZONE_SIZE` - Shared memory zone size required by nginx for dynamic upstream resolution. Defaults to `64k`.
+   * `NGINX_OCSP_RESOLVERS` - Space-separated DNS resolvers for OCSP stapling checks. If unset, this uses `NGINX_RESOLVERS`.
+   * `NGINX_OCSP_RESOLVER_VALID` - How long nginx should consider OCSP DNS answers valid. Defaults to `300s`.
+   * `NGINX_OCSP_RESOLVER_TIMEOUT` - OCSP DNS lookup timeout. Defaults to `5s`.
 
 Existing upstream connections are not forcibly moved when DNS changes. New upstream connections use the refreshed address after nginx re-resolves the name.
 
@@ -105,7 +117,7 @@ Example `Dockerfile`:
 
 ## SSL Settings
 
-Reasonable defaults have been chosen for SSL cipher suites using [Mozilla's Recommendations](https://wiki.mozilla.org/Security/Server_Side_TLS). Very old browsers (such as IE6) will be unable to connect with the default settings.
+Reasonable defaults have been chosen using the [TLS Reference configurator](https://configurator.tlsref.org/) intermediate profile for nginx and OpenSSL. The default configuration enables TLS 1.2 and TLS 1.3, uses modern AEAD cipher suites for TLS 1.2, and allows clients to choose their preferred cipher from the configured list. Very old clients without TLS 1.2 support will be unable to connect with the default settings.
 
 ## Security Headers
 
