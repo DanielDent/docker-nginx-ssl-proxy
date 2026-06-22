@@ -91,5 +91,8 @@ COPY temp-setup-key.pem /etc/nginx/temp-server-key.pem
 
 VOLUME "/etc/letsencrypt"
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD curl -fsS -o /dev/null http://127.0.0.1/silent_liveness_check || exit 1
+
 ENTRYPOINT ["/init"]
 CMD []
