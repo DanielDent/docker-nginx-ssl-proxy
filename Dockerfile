@@ -19,7 +19,7 @@ RUN set -eux; \
     export DEBIAN_FRONTEND=noninteractive; \
     apt-get update -q; \
     apt-get dist-upgrade -y; \
-    apt-get install -y --no-install-recommends bash ca-certificates curl certbot openssl pwgen xz-utils; \
+    apt-get install -y --no-install-recommends bash ca-certificates curl certbot openssl pwgen xz-utils procps; \
     case "$TARGETARCH" in \
         amd64) \
             s6_arch="x86_64"; \
