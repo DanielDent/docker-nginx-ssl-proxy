@@ -28,9 +28,16 @@ while true; do
 
     if certbot certonly --non-interactive --webroot -w /usr/share/nginx/html --agree-tos \
             --rsa-key-size 2048 --keep-until-expiring --expand --register-unsafely-without-email -d $SERVERNAME $EXTRANAMES; then
-        cp /etc/letsencrypt/live/${SERVERNAME:-example.com}/privkey.pem /etc/letsencrypt/privkey-copy.pem
-        cp /etc/letsencrypt/live/${SERVERNAME:-example.com}/fullchain.pem /etc/letsencrypt/fullchain-copy.pem
-        nginx -s reload
+        LIVE_DIR="/etc/letsencrypt/live/${SERVERNAME:-example.com}"
+        # certbot exits 0 even when the certificate was not renewed ("not yet due").
+        # Only deploy and reload nginx when the certificate has actually changed,
+        # otherwise nginx would be reloaded on every loop iteration.
+        if ! cmp -s "$LIVE_DIR/fullchain.pem" /etc/letsencrypt/fullchain-copy.pem; then
+            echo "Certificate changed; deploying and reloading nginx."
+            cp "$LIVE_DIR/privkey.pem" /etc/letsencrypt/privkey-copy.pem
+            cp "$LIVE_DIR/fullchain.pem" /etc/letsencrypt/fullchain-copy.pem
+            nginx -s reload
+        fi
     else
         if [ -e /etc/letsencrypt/live/${SERVERNAME:-example.com}/fullchain.pem ]; then
             BIGSLEEP="$(( 360 + $(($RANDOM % 360)) ))"m # 6-12 hours
