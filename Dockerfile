@@ -86,7 +86,6 @@ COPY services.d/certbot/* /etc/services.d/certbot/
 COPY nginx.conf security_headers.conf hsts.conf /etc/nginx/
 COPY proxy.conf /etc/nginx/conf.d/default.conf
 COPY auth_part*.conf /root/
-COPY dhparams.pem /etc/nginx/
 COPY temp-setup-cert.pem /etc/nginx/temp-server-cert.pem
 COPY temp-setup-key.pem /etc/nginx/temp-server-key.pem
 
