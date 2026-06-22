@@ -52,6 +52,14 @@ RUN set -eux; \
     tar -C / -Jxpf /tmp/s6-overlay-${s6_arch}.tar.xz; \
     tar -C / -Jxpf /tmp/s6-overlay-symlinks-noarch.tar.xz; \
     tar -C / -Jxpf /tmp/s6-overlay-symlinks-arch.tar.xz; \
+    mv /init /init-s6; \
+    { \
+        echo '#!/bin/sh'; \
+        echo '# Some container launch wrappers leave fd 3 open, which makes s6-overlay v3 wait forever.'; \
+        echo 'exec 3<&-'; \
+        echo 'exec /init-s6 "$@"'; \
+    } > /init; \
+    chmod +x /init; \
     echo "---> INSTALLING envplate"; \
     envplate_file="envplate_${ENVPLATE_VERSION}_Linux_${envplate_arch}.tar.gz"; \
     curl -fsSLo /tmp/${envplate_file} "https://github.com/kreuzwerker/envplate/releases/download/v${ENVPLATE_VERSION}/${envplate_file}"; \
