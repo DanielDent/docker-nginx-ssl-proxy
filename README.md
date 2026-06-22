@@ -60,11 +60,20 @@ The following environment variables can be used to tune this behavior:
    * `NGINX_RESOLVER_VALID` - How long nginx should consider DNS answers valid. Defaults to `30s`.
    * `NGINX_RESOLVER_TIMEOUT` - DNS lookup timeout. Defaults to `5s`.
    * `NGINX_UPSTREAM_ZONE_SIZE` - Shared memory zone size required by nginx for dynamic upstream resolution. Defaults to `64k`.
+
+Existing upstream connections are not forcibly moved when DNS changes. New upstream connections use the refreshed address after nginx re-resolves the name.
+
+## Optional: OCSP Stapling
+
+OCSP stapling is disabled by default. Let's Encrypt turned off its OCSP service in August 2025 and no longer includes OCSP URLs in its certificates, so enabling stapling does not help the default Let's Encrypt certificate flow.
+
+If you use a custom certificate from a CA that still provides OCSP, or a certificate with OCSP Must-Staple, set `OCSP_STAPLING` to `on`.
+
+The following environment variables can be used to tune OCSP DNS behavior when stapling is enabled:
+
    * `NGINX_OCSP_RESOLVERS` - Space-separated DNS resolvers for OCSP stapling checks. If unset, this uses `NGINX_RESOLVERS`.
    * `NGINX_OCSP_RESOLVER_VALID` - How long nginx should consider OCSP DNS answers valid. Defaults to `300s`.
    * `NGINX_OCSP_RESOLVER_TIMEOUT` - OCSP DNS lookup timeout. Defaults to `5s`.
-
-Existing upstream connections are not forcibly moved when DNS changes. New upstream connections use the refreshed address after nginx re-resolves the name.
 
 ## Optional: Enable Simple Authentication
 

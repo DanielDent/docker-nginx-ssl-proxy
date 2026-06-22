@@ -19,6 +19,18 @@ export NGINX_OCSP_RESOLVERS="${NGINX_OCSP_RESOLVERS:-$NGINX_RESOLVERS}"
 export NGINX_OCSP_RESOLVER_VALID="${NGINX_OCSP_RESOLVER_VALID:-300s}"
 export NGINX_OCSP_RESOLVER_TIMEOUT="${NGINX_OCSP_RESOLVER_TIMEOUT:-5s}"
 
+echo '' > /etc/nginx/ocsp_stapling.conf
+
+if [ "$OCSP_STAPLING" == "on" ]; then
+    {
+        echo "ssl_stapling on;"
+        echo "ssl_stapling_verify on;"
+        echo "ssl_trusted_certificate /etc/letsencrypt/fullchain-copy.pem;"
+        echo "resolver ${NGINX_OCSP_RESOLVERS} valid=${NGINX_OCSP_RESOLVER_VALID};"
+        echo "resolver_timeout ${NGINX_OCSP_RESOLVER_TIMEOUT};"
+    } > /etc/nginx/ocsp_stapling.conf
+fi
+
 /usr/local/bin/ep -v /etc/nginx/conf.d/*
 
 if [ "$DO_AUTH" == "required" ]; then
